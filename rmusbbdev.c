@@ -1,4 +1,7 @@
+#define _FILE_OFFSET_BITS 64
+// asprintf
 #define _GNU_SOURCE
+
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
