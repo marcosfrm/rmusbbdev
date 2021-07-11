@@ -2,7 +2,7 @@
 
 ## Motivação
 
-Programinha para uso em scripts de backup, com propósito de _remover com segurança_ dispositivos de armazenamento USB **após desmontados**. O kernel liberará o cache de escrita caso exista e desativará a porta. Equivale a `udisksctl power-off …`, porém depende apenas da libudev, sem instalar a montanha de coisa requerida pelo udisks.
+Programinha para uso em scripts de backup, com propósito de _remover com segurança_ dispositivos de armazenamento USB **após desmontados**. O kernel liberará o cache de escrita caso exista e desconectará a porta. Equivale a `udisksctl power-off …`, porém depende apenas da libudev, sem instalar a montanha de coisa requerida pelo udisks.
 
 ## Gerando binário
 

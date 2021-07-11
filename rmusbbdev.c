@@ -13,7 +13,7 @@
 int main(int argc, char **argv)
 {
     struct udev *context = udev_new();
-    struct udev_device *blkdev, *usbdev;
+    struct udev_device *blkdev, *usbdev = NULL;
     struct stat sb;
     char *devname, *syspath;
     int fd;
@@ -51,7 +51,7 @@ int main(int argc, char **argv)
             fd = open(syspath, O_WRONLY);
             if (fd >= 0)
             {
-                printf("Removendo dispositivo USB... ");
+                printf("Desconectando porta USB %s... ", udev_device_get_sysname(usbdev));
                 if (write(fd, "1", 1) == 1)
                 {
                     printf("sucesso.\n");
