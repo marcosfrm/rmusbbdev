@@ -46,7 +46,7 @@ int main(int argc, char **argv)
     if (usbdev != NULL)
     {
         // https://github.com/torvalds/linux/commit/253e05724f9230910344357b1142ad8642ff9f5a
-        if (asprintf(&syspath, "%s%s", udev_device_get_syspath(usbdev), "/remove") > 0)
+        if (asprintf(&syspath, "%s/remove", udev_device_get_syspath(usbdev)) > 0)
         {
             fd = open(syspath, O_WRONLY);
             if (fd >= 0)
