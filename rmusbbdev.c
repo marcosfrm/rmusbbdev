@@ -12,10 +12,11 @@
 
 int main(int argc, char **argv)
 {
-    struct udev *context = udev_new();
-    struct udev_device *blkdev, *usbdev = NULL;
     struct stat sb;
-    char *devname, *syspath;
+    struct udev *ucxt;
+    struct udev_device *blkdev, *usbdev;
+    const char *devname;
+    char *syspath;
     int fd;
 
     if (argc != 2)
@@ -24,11 +25,11 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    devname = strdup(argv[1]);
+    devname = argv[1];
 
     if (stat(devname, &sb) != 0 || !S_ISBLK(sb.st_mode))
     {
-        fprintf(stderr, "Dispositivo inexistente ou nao de bloco.\n");
+        fprintf(stderr, "Dispositivo inexistente ou não de bloco.\n");
         exit(EXIT_FAILURE);
     }
 
@@ -37,33 +38,45 @@ int main(int argc, char **argv)
         devname += 5;
     }
 
-    blkdev = udev_device_new_from_subsystem_sysname(context, "block", devname);
+    ucxt = udev_new();
+    blkdev = udev_device_new_from_subsystem_sysname(ucxt, "block", devname);
     if (blkdev != NULL)
     {
         usbdev = udev_device_get_parent_with_subsystem_devtype(blkdev, "usb", "usb_device");
+        if (usbdev != NULL)
+        {
+            // https://github.com/torvalds/linux/commit/253e05724f9230910344357b1142ad8642ff9f5a
+            if (asprintf(&syspath, "%s/remove", udev_device_get_syspath(usbdev)) > 0)
+            {
+                fd = open(syspath, O_WRONLY);
+                if (fd >= 0)
+                {
+                    printf("Desconectando porta USB %s... ", udev_device_get_sysname(usbdev));
+                    fflush(stdout);
+                    if (write(fd, "1", 1) == 1)
+                    {
+                        printf("sucesso.\n");
+                        fflush(stdout);
+                    }
+                    else
+                    {
+                        printf("falha.\n");
+                        fflush(stdout);
+                    }
+
+                    close(fd);
+                }
+
+                free(syspath);
+            }
+
+            // usbdev é desalocado junto com blkdev
+        }
+
+        udev_device_unref(blkdev);
     }
 
-    if (usbdev != NULL)
-    {
-        // https://github.com/torvalds/linux/commit/253e05724f9230910344357b1142ad8642ff9f5a
-        if (asprintf(&syspath, "%s/remove", udev_device_get_syspath(usbdev)) > 0)
-        {
-            fd = open(syspath, O_WRONLY);
-            if (fd >= 0)
-            {
-                printf("Desconectando porta USB %s... ", udev_device_get_sysname(usbdev));
-                if (write(fd, "1", 1) == 1)
-                {
-                    printf("sucesso.\n");
-                }
-                else
-                {
-                    printf("falha.\n");
-                }
-                close(fd);
-            }
-        }
-    }
+    udev_unref(ucxt);
 
     return EXIT_SUCCESS;
 }
