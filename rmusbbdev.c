@@ -1,8 +1,9 @@
 #define _FILE_OFFSET_BITS 64
-// asprintf
+// asprintf, basename
 #define _GNU_SOURCE
 
 #include <fcntl.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,31 +16,30 @@ int main(int argc, char **argv)
     struct stat sb;
     struct udev *ucxt;
     struct udev_device *blkdev, *usbdev;
-    const char *devname;
-    char *syspath;
+    char *devname, *syspath;
     int fd;
 
     if (argc != 2)
     {
-        fprintf(stderr, "uso: %s /dev/dispositivo\n", argv[0]);
+        fprintf(stderr, "uso: %s dispositivo\n", basename(argv[0]));
         exit(EXIT_FAILURE);
     }
 
-    devname = argv[1];
-
-    if (stat(devname, &sb) != 0 || !S_ISBLK(sb.st_mode))
+    if (stat(argv[1], &sb) != 0 || !S_ISBLK(sb.st_mode))
     {
         fprintf(stderr, "Dispositivo inexistente ou não de bloco.\n");
         exit(EXIT_FAILURE);
     }
 
-    if (strncmp(devname, "/dev/", 5) == 0)
+    devname = realpath(argv[1], NULL);
+    if (devname == NULL)
     {
-        devname += 5;
+        fprintf(stderr, "Falha ao determinar caminho canônico do dispositivo: %m\n");
+        exit(EXIT_FAILURE);
     }
 
     ucxt = udev_new();
-    blkdev = udev_device_new_from_subsystem_sysname(ucxt, "block", devname);
+    blkdev = udev_device_new_from_subsystem_sysname(ucxt, "block", basename(devname));
     if (blkdev != NULL)
     {
         usbdev = udev_device_get_parent_with_subsystem_devtype(blkdev, "usb", "usb_device");
@@ -76,6 +76,7 @@ int main(int argc, char **argv)
         udev_device_unref(blkdev);
     }
 
+    free(devname);
     udev_unref(ucxt);
 
     return EXIT_SUCCESS;

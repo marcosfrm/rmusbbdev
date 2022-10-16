@@ -28,7 +28,7 @@ gcc rmusbbdev.c -o rmusbbdev -ludev
 ## Uso
 
 ```
-rmusbbdev /dev/dispositivo
+rmusbbdev dispositivo
 ```
 
-Pode ser especificado o dispositivo principal (`/dev/sdx`) ou partição (`/dev/sdxy`).
+Pode ser especificado o dispositivo principal (`/dev/sdx`) ou partição (`/dev/sdxy`). Links `/dev/disk/by-*/*` também são aceitos.
