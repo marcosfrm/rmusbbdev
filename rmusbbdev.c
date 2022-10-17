@@ -21,7 +21,7 @@ int main(int argc, char **argv)
 
     if (argc != 2)
     {
-        fprintf(stderr, "uso: %s dispositivo\n", basename(argv[0]));
+        fprintf(stderr, "Uso: %s dispositivo\n", basename(argv[0]));
         exit(EXIT_FAILURE);
     }
 
@@ -34,7 +34,7 @@ int main(int argc, char **argv)
     devname = realpath(argv[1], NULL);
     if (devname == NULL)
     {
-        fprintf(stderr, "Falha ao determinar caminho canônico do dispositivo: %m\n");
+        perror("realpath");
         exit(EXIT_FAILURE);
     }
 
